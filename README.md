@@ -22,6 +22,7 @@
   - 좌우 방향키(←/→)로 페이지 이동
   - 버튼 A (누르는 동안 한국어 훈/음 표시)
   - 버튼 B (누르는 동안 일본어 뜻/음 표시)
+  - 버튼 C (누르는 동안 일본어 단어 예시 1~2개 표시)
   - 배경 클릭으로 토글: 한국 훈/음 ↔ 한자만
 
 <a id="english"></a>
@@ -48,6 +49,7 @@ A vanilla JavaScript project for browsing Joyo Kanji in a table layout.
   - Page navigation with Left/Right arrow keys (←/→)
   - Button A (shows Korean meaning/reading while pressed)
   - Button B (shows Japanese meaning/reading while pressed)
+  - Button C (shows 1-2 Japanese word examples while pressed)
   - Background click toggle: Korean meaning/reading ↔ kanji only
 
 <a id="japanese"></a>
@@ -74,4 +76,5 @@ A vanilla JavaScript project for browsing Joyo Kanji in a table layout.
   - 左右キー(←/→)でページ移動
   - ボタンA (押している間、韓国語の訓/音を表示)
   - ボタンB (押している間、日本語の意味/音を表示)
+  - ボタンC (押している間、日本語の単語例を1-2個表示)
   - 背景クリックでトグル: 韓国語の訓/音 ↔ 漢字のみ
