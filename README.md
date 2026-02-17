@@ -9,8 +9,8 @@
 **Language List**
 
 - ▶ Korean/국문
-- [English](#english)
-- [Japanese/日本語](#japanese)
+- ⠀ [English](#english)
+- ⠀ [Japanese/日本語](#japanese)
 
 # Kanji Table 2136
 
@@ -34,9 +34,9 @@
 
 **Language List**
 
-- [Korean/국문](#korean)
+- ⠀ [Korean/국문](#korean)
 - ▶ English
-- [Japanese/日本語](#japanese)
+- ⠀ [Japanese/日本語](#japanese)
 
 # Kanji Table 2136
 
@@ -60,8 +60,8 @@ A vanilla JavaScript project for browsing Joyo Kanji in a table layout.
 
 **Language List**
 
-- [Korean/국문](#korean)
-- [English](#english)
+- ⠀ [Korean/국문](#korean)
+- ⠀ [English](#english)
 - ▶ Japanese/日本語
 
 # Kanji Table 2136
