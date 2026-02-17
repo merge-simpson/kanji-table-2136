@@ -161,6 +161,150 @@ const CORE_KANJI = [
   { k: "作", koH: "지을", koE: "작", jpM: "만들다", jpO: "サク" }
 ];
 
+const JP_WORD_EXAMPLES = {
+  日: ["日本", "休日"],
+  月: ["月曜日", "今月"],
+  火: ["火山", "花火"],
+  水: ["水曜日", "飲み水"],
+  木: ["木曜日", "大木"],
+  金: ["金曜日", "料金"],
+  土: ["土曜日", "土地"],
+  人: ["日本人", "人気"],
+  学: ["学生", "学校"],
+  校: ["高校", "母校"],
+  生: ["先生", "人生"],
+  先: ["先生", "先週"],
+  年: ["今年", "来年"],
+  時: ["時間", "時計"],
+  食: ["食べる", "食事"],
+  飲: ["飲み物", "飲む"],
+  見: ["見る", "意見"],
+  聞: ["聞く", "新聞"],
+  読: ["読む", "読書"],
+  書: ["書く", "辞書"],
+  行: ["行く", "旅行"],
+  来: ["来る", "未来"],
+  帰: ["帰る", "帰国"],
+  会: ["会社", "会う"],
+  社: ["会社", "神社"],
+  道: ["道", "道路"],
+  電: ["電車", "電話"],
+  車: ["自転車", "車道"],
+  麦: ["むぎ", "麦茶"],
+  雨: ["雨", "梅雨"],
+  花: ["花", "花見"]
+};
+
+const JP_KUN_FALLBACK = {
+  一: "ひと",
+  二: "ふた",
+  三: "み",
+  四: "よん",
+  五: "いつ",
+  六: "む",
+  七: "なな",
+  八: "や",
+  九: "ここの",
+  十: "とお",
+  国: "くに",
+  上: "うえ",
+  下: "した",
+  中: "なか",
+  大: "おお",
+  小: "ちい",
+  山: "やま",
+  川: "かわ",
+  天: "あま",
+  地: "つち",
+  日: "ひ",
+  月: "つき",
+  口: "くち",
+  目: "め",
+  耳: "みみ",
+  手: "て",
+  足: "あし",
+  力: "ちから",
+  心: "こころ",
+  女: "おんな",
+  男: "おとこ",
+  子: "こ",
+  花: "はな",
+  雨: "あめ",
+  空: "そら",
+  海: "うみ",
+  道: "みち",
+  人: "ひと",
+  火: "ひ",
+  水: "みず",
+  木: "き",
+  金: "かね",
+  土: "つち",
+  犬: "いぬ",
+  猫: "ねこ",
+  魚: "さかな",
+  鳥: "とり",
+  馬: "うま",
+  牛: "うし",
+  米: "こめ",
+  茶: "ちゃ",
+  肉: "にく",
+  門: "もん",
+  店: "みせ",
+  家: "いえ",
+  父: "ちち",
+  母: "はは",
+  兄: "あに",
+  弟: "おとうと",
+  姉: "あね",
+  妹: "いもうと",
+  外: "そと",
+  内: "うち",
+  前: "まえ",
+  後: "うしろ",
+  左: "ひだり",
+  右: "みぎ",
+  東: "ひがし",
+  西: "にし",
+  南: "みなみ",
+  北: "きた",
+  春: "はる",
+  夏: "なつ",
+  秋: "あき",
+  冬: "ふゆ",
+  朝: "あさ",
+  昼: "ひる",
+  夜: "よる",
+  白: "しろ",
+  黒: "くろ",
+  赤: "あか",
+  青: "あお"
+};
+
+function katakanaToHiragana(text) {
+  return text.replace(/[\u30a1-\u30f6]/g, (char) =>
+    String.fromCharCode(char.charCodeAt(0) - 0x60)
+  );
+}
+
+function buildExampleText(item) {
+  const examples = JP_WORD_EXAMPLES[item.k];
+  if (examples && examples.length > 0) {
+    return examples.slice(0, 2).join(" / ");
+  }
+
+  const kunReading = JP_KUN_FALLBACK[item.k];
+  if (kunReading) {
+    return kunReading;
+  }
+
+  const firstReading = item.jpO.split("/")[0].trim();
+  if (!firstReading) {
+    return "";
+  }
+
+  return katakanaToHiragana(firstReading);
+}
+
 const pageCache = new Map();
 const usedChars = new Set(CORE_KANJI.map((item) => item.k));
 let mode = "base";
@@ -172,6 +316,7 @@ const prevBtn = document.getElementById("prevPage");
 const nextBtn = document.getElementById("nextPage");
 const showKoreanBtn = document.getElementById("showKorean");
 const showJapaneseBtn = document.getElementById("showJapanese");
+const showJapaneseExamplesBtn = document.getElementById("showJapaneseExamples");
 const appRoot = document.getElementById("appRoot");
 
 const totalPages = Math.max(1, Math.ceil(TARGET_KANJI_COUNT / PAGE_SIZE));
@@ -249,13 +394,17 @@ function renderCell(item) {
   jpOverlay.className = "jp-overlay";
   jpOverlay.innerHTML = `<span>${item.jpM}</span><span>${item.jpO}</span>`;
 
-  cell.append(hanja, koInfo, jpOverlay);
+  const jpExample = document.createElement("div");
+  jpExample.className = "jp-example";
+  jpExample.textContent = buildExampleText(item);
+
+  cell.append(hanja, koInfo, jpOverlay, jpExample);
   return cell;
 }
 
 function applyMode(nextMode) {
   mode = nextMode;
-  appRoot.classList.remove("mode-ko", "mode-jp");
+  appRoot.classList.remove("mode-ko", "mode-jp", "mode-c");
 
   if (mode === "ko") {
     appRoot.classList.add("mode-ko");
@@ -263,6 +412,10 @@ function applyMode(nextMode) {
 
   if (mode === "jp") {
     appRoot.classList.add("mode-jp");
+  }
+
+  if (mode === "c") {
+    appRoot.classList.add("mode-c");
   }
 }
 
@@ -345,6 +498,7 @@ function bindHoldMode(button, holdMode) {
 
 bindHoldMode(showKoreanBtn, "ko");
 bindHoldMode(showJapaneseBtn, "jp");
+bindHoldMode(showJapaneseExamplesBtn, "c");
 
 renderPage(1);
 applyMode("base");
