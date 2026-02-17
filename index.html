@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>한자 표</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app" id="appRoot">
+      <header class="toolbar">
+        <div class="paging">
+          <button id="prevPage" type="button" aria-label="이전 페이지">
+            이전
+          </button>
+          <span id="pageLabel">1 / 1</span>
+          <button id="nextPage" type="button" aria-label="다음 페이지">
+            다음
+          </button>
+        </div>
+        <div class="modes">
+          <button id="showKorean" type="button">버튼 A: 한국 훈/음</button>
+          <button id="showJapanese" type="button">버튼 B: 일본어 뜻/음</button>
+        </div>
+      </header>
+
+      <section id="grid" class="grid" aria-label="한자 목록"></section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
