@@ -281,6 +281,30 @@ function renderPage(page) {
 prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
 nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
 
+document.addEventListener("keydown", (event) => {
+  const tagName = event.target?.tagName;
+  const isEditable =
+    event.target?.isContentEditable ||
+    tagName === "INPUT" ||
+    tagName === "TEXTAREA" ||
+    tagName === "SELECT";
+
+  if (isEditable) {
+    return;
+  }
+
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    renderPage(currentPage - 1);
+    return;
+  }
+
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    renderPage(currentPage + 1);
+  }
+});
+
 document.addEventListener("click", (event) => {
   const clickedBackground = event.target === document.body;
   const clickedOutsideApp = !appRoot.contains(event.target);
