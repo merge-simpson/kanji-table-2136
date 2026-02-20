@@ -47,6 +47,21 @@ body {
   flex-wrap: wrap;
 }
 
+.mode-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.3rem;
+  border: 1px solid #bcc3ad;
+  background: #f5f8ee;
+}
+
+.mode-title {
+  font-size: 0.78rem;
+  color: #4f5c4b;
+  padding-right: 0.25rem;
+}
+
 button {
   border: 1px solid #8d9679;
   background: #fff;
@@ -58,6 +73,11 @@ button {
 
 button:hover {
   background: #eef2e5;
+}
+
+button.is-active {
+  background: #dce8c3;
+  border-color: #6f7d45;
 }
 
 .grid {

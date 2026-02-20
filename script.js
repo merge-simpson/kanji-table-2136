@@ -955,10 +955,11 @@ const gridEl = document.getElementById("grid");
 const pageLabelEl = document.getElementById("pageLabel");
 const prevBtn = document.getElementById("prevPage");
 const nextBtn = document.getElementById("nextPage");
-const showKoreanBtn = document.getElementById("showKorean");
-const showJapaneseBtn = document.getElementById("showJapanese");
-const showJapaneseExamplesBtn = document.getElementById("showJapaneseExamples");
+const toggleModeButtons = Array.from(document.querySelectorAll("[data-toggle-mode]"));
+const holdModeButtons = Array.from(document.querySelectorAll("[data-hold-mode]"));
 const appRoot = document.getElementById("appRoot");
+let pinnedMode = "base";
+let activeHoldMode = null;
 
 function normalizeLoadedJoyoItem(item) {
   return {
@@ -1081,6 +1082,12 @@ function applyMode(nextMode) {
   if (mode === "c") {
     appRoot.classList.add("mode-c");
   }
+
+  toggleModeButtons.forEach((button) => {
+    const isActive = button.dataset.toggleMode === mode;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
 }
 
 function renderPage(page) {
@@ -1122,18 +1129,15 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-document.addEventListener("click", (event) => {
-  const clickedBackground = event.target === document.body;
-  const clickedOutsideApp = !appRoot.contains(event.target);
-
-  if (clickedBackground || clickedOutsideApp) {
-    applyMode(mode === "ko" ? "base" : "ko");
-  }
-});
-
-function bindHoldMode(button, holdMode) {
-  const activate = () => applyMode(holdMode);
-  const deactivate = () => applyMode("base");
+function bindHoldMode(button, holdModeName) {
+  const activate = () => {
+    activeHoldMode = holdModeName;
+    applyMode(holdModeName);
+  };
+  const deactivate = () => {
+    activeHoldMode = null;
+    applyMode(pinnedMode);
+  };
 
   button.addEventListener("pointerdown", activate);
   button.addEventListener("pointerup", deactivate);
@@ -1160,11 +1164,24 @@ function bindHoldMode(button, holdMode) {
   button.addEventListener("blur", deactivate);
 }
 
-bindHoldMode(showKoreanBtn, "ko");
-bindHoldMode(showJapaneseBtn, "jp");
-bindHoldMode(showJapaneseExamplesBtn, "c");
+toggleModeButtons.forEach((button) => {
+  button.setAttribute("aria-pressed", "false");
+  button.addEventListener("click", () => {
+    if (activeHoldMode) {
+      return;
+    }
+
+    const targetMode = button.dataset.toggleMode;
+    pinnedMode = pinnedMode === targetMode ? "base" : targetMode;
+    applyMode(pinnedMode);
+  });
+});
+
+holdModeButtons.forEach((button) => {
+  bindHoldMode(button, button.dataset.holdMode);
+});
 
 initializeKanjiList().then(() => {
   renderPage(1);
-  applyMode("base");
+  applyMode(pinnedMode);
 });
