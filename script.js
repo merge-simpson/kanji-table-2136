@@ -2,166 +2,8 @@ const DESKTOP_ROWS = 7;
 const DESKTOP_COLUMNS = 10;
 const PAGE_SIZE = DESKTOP_ROWS * DESKTOP_COLUMNS;
 const TARGET_KANJI_COUNT = 2136;
-const JOYO_KANJI_API_URL = "https://kanjiapi.dev/v1/kanji/joyo";
-const JOYO_KANJI_DETAIL_API_URL = "https://kanjiapi.dev/v1/kanji";
+const JOYO_KANJI_SORTED_JSON_PATH = "./joyo-kanji.sorted.json";
 
-const JOYO_KANJI_SEED = [
-  { k: "一", koH: "한", koE: "일", jpM: "ひと", jpO: "イチ / イツ" },
-  { k: "二", koH: "두", koE: "이", jpM: "ふた", jpO: "ニ" },
-  { k: "三", koH: "석", koE: "삼", jpM: "み", jpO: "サン" },
-  { k: "四", koH: "넉", koE: "사", jpM: "よん", jpO: "シ" },
-  { k: "五", koH: "다섯", koE: "오", jpM: "いつ", jpO: "ゴ" },
-  { k: "六", koH: "여섯", koE: "육", jpM: "む", jpO: "ロク" },
-  { k: "七", koH: "일곱", koE: "칠", jpM: "なな", jpO: "シチ" },
-  { k: "八", koH: "여덟", koE: "팔", jpM: "や", jpO: "ハチ" },
-  { k: "九", koH: "아홉", koE: "구", jpM: "ここの", jpO: "キュウ / ク" },
-  { k: "十", koH: "열", koE: "십", jpM: "とお", jpO: "ジュウ" },
-  { k: "百", koH: "일백", koE: "백", jpM: "ひゃく", jpO: "ヒャク" },
-  { k: "千", koH: "일천", koE: "천", jpM: "せん", jpO: "セン" },
-  { k: "万", koH: "일만", koE: "만", jpM: "まん", jpO: "マン" },
-  { k: "上", koH: "위", koE: "상", jpM: "うえ", jpO: "ジョウ" },
-  { k: "下", koH: "아래", koE: "하", jpM: "した", jpO: "カ / ゲ" },
-  { k: "中", koH: "가운데", koE: "중", jpM: "なか", jpO: "チュウ" },
-  { k: "大", koH: "큰", koE: "대", jpM: "おお", jpO: "ダイ / タイ" },
-  { k: "小", koH: "작을", koE: "소", jpM: "ちい", jpO: "ショウ" },
-  { k: "山", koH: "메", koE: "산", jpM: "やま", jpO: "サン" },
-  { k: "川", koH: "내", koE: "천", jpM: "かわ", jpO: "セン" },
-  { k: "天", koH: "하늘", koE: "천", jpM: "あま", jpO: "テン" },
-  { k: "地", koH: "땅", koE: "지", jpM: "つち", jpO: "チ" },
-  { k: "日", koH: "해", koE: "일", jpM: "ひ", jpO: "ニチ / ジツ" },
-  { k: "月", koH: "달", koE: "월", jpM: "つき", jpO: "ゲツ / ガツ" },
-  { k: "火", koH: "불", koE: "화", jpM: "ひ", jpO: "カ" },
-  { k: "水", koH: "물", koE: "수", jpM: "みず", jpO: "スイ" },
-  { k: "木", koH: "나무", koE: "목", jpM: "き", jpO: "モク / ボク" },
-  { k: "金", koH: "쇠", koE: "금", jpM: "かね", jpO: "キン" },
-  { k: "土", koH: "흙", koE: "토", jpM: "つち", jpO: "ド / ト" },
-  { k: "人", koH: "사람", koE: "인", jpM: "ひと", jpO: "ジン / ニン" },
-  { k: "口", koH: "입", koE: "구", jpM: "くち", jpO: "コウ / ク" },
-  { k: "目", koH: "눈", koE: "목", jpM: "め", jpO: "モク" },
-  { k: "耳", koH: "귀", koE: "이", jpM: "みみ", jpO: "ジ" },
-  { k: "手", koH: "손", koE: "수", jpM: "て", jpO: "シュ" },
-  { k: "足", koH: "발", koE: "족", jpM: "あし", jpO: "ソク" },
-  { k: "力", koH: "힘", koE: "력", jpM: "ちから", jpO: "リョク" },
-  { k: "心", koH: "마음", koE: "심", jpM: "こころ", jpO: "シン" },
-  { k: "女", koH: "여자", koE: "녀", jpM: "おんな", jpO: "ジョ" },
-  { k: "男", koH: "사내", koE: "남", jpM: "おとこ", jpO: "ダン / ナン" },
-  { k: "子", koH: "아이", koE: "자", jpM: "こ", jpO: "シ" },
-  { k: "学", koH: "배울", koE: "학", jpM: "がく", jpO: "ガク" },
-  { k: "校", koH: "학교", koE: "교", jpM: "こう", jpO: "コウ" },
-  { k: "生", koH: "날", koE: "생", jpM: "せい", jpO: "セイ / ショウ" },
-  { k: "先", koH: "먼저", koE: "선", jpM: "せん", jpO: "セン" },
-  { k: "年", koH: "해", koE: "년", jpM: "ねん", jpO: "ネン" },
-  { k: "時", koH: "때", koE: "시", jpM: "じ", jpO: "ジ" },
-  { k: "分", koH: "나눌", koE: "분", jpM: "ぶん", jpO: "ブン / フン" },
-  { k: "本", koH: "근본", koE: "본", jpM: "ほん", jpO: "ホン" },
-  { k: "文", koH: "글월", koE: "문", jpM: "ぶん", jpO: "ブン / モン" },
-  { k: "字", koH: "글자", koE: "자", jpM: "じ", jpO: "ジ" },
-  { k: "語", koH: "말씀", koE: "어", jpM: "ご", jpO: "ゴ" },
-  { k: "国", koH: "나라", koE: "국", jpM: "くに", jpO: "コク" },
-  { k: "民", koH: "백성", koE: "민", jpM: "みん", jpO: "ミン" },
-  { k: "王", koH: "임금", koE: "왕", jpM: "おう", jpO: "オウ" },
-  { k: "正", koH: "바를", koE: "정", jpM: "せい", jpO: "セイ" },
-  { k: "直", koH: "곧을", koE: "직", jpM: "ちょく", jpO: "チョク" },
-  { k: "見", koH: "볼", koE: "견", jpM: "けん", jpO: "ケン" },
-  { k: "聞", koH: "들을", koE: "문", jpM: "ぶん", jpO: "ブン / モン" },
-  { k: "言", koH: "말씀", koE: "언", jpM: "げん", jpO: "ゲン" },
-  { k: "話", koH: "말씀", koE: "화", jpM: "わ", jpO: "ワ" },
-  { k: "読", koH: "읽을", koE: "독", jpM: "どく", jpO: "ドク" },
-  { k: "書", koH: "쓸", koE: "서", jpM: "しょ", jpO: "ショ" },
-  { k: "行", koH: "갈", koE: "행", jpM: "こう", jpO: "コウ / ギョウ" },
-  { k: "来", koH: "올", koE: "래", jpM: "らい", jpO: "ライ" },
-  { k: "帰", koH: "돌아갈", koE: "귀", jpM: "き", jpO: "キ" },
-  { k: "食", koH: "먹을", koE: "식", jpM: "しょく", jpO: "ショク" },
-  { k: "飲", koH: "마실", koE: "음", jpM: "いん", jpO: "イン" },
-  { k: "買", koH: "살", koE: "매", jpM: "ばい", jpO: "バイ" },
-  { k: "売", koH: "팔", koE: "매", jpM: "ばい", jpO: "バイ" },
-  { k: "開", koH: "열", koE: "개", jpM: "かい", jpO: "カイ" },
-  { k: "閉", koH: "닫을", koE: "폐", jpM: "へい", jpO: "ヘイ" },
-  { k: "休", koH: "쉴", koE: "휴", jpM: "きゅう", jpO: "キュウ" },
-  { k: "立", koH: "설", koE: "립", jpM: "りつ", jpO: "リツ" },
-  { k: "座", koH: "앉을", koE: "좌", jpM: "ざ", jpO: "ザ" },
-  { k: "車", koH: "수레", koE: "차", jpM: "しゃ", jpO: "シャ" },
-  { k: "電", koH: "번개", koE: "전", jpM: "でん", jpO: "デン" },
-  { k: "気", koH: "기운", koE: "기", jpM: "き", jpO: "キ" },
-  { k: "雨", koH: "비", koE: "우", jpM: "あめ", jpO: "ウ" },
-  { k: "雪", koH: "눈", koE: "설", jpM: "せつ", jpO: "セツ" },
-  { k: "風", koH: "바람", koE: "풍", jpM: "ふう", jpO: "フウ" },
-  { k: "花", koH: "꽃", koE: "화", jpM: "はな", jpO: "カ" },
-  { k: "草", koH: "풀", koE: "초", jpM: "そう", jpO: "ソウ" },
-  { k: "竹", koH: "대", koE: "죽", jpM: "ちく", jpO: "チク" },
-  { k: "犬", koH: "개", koE: "견", jpM: "いぬ", jpO: "ケン" },
-  { k: "猫", koH: "고양이", koE: "묘", jpM: "ねこ", jpO: "ビョウ" },
-  { k: "魚", koH: "물고기", koE: "어", jpM: "さかな", jpO: "ギョ" },
-  { k: "鳥", koH: "새", koE: "조", jpM: "とり", jpO: "チョウ" },
-  { k: "馬", koH: "말", koE: "마", jpM: "うま", jpO: "バ" },
-  { k: "牛", koH: "소", koE: "우", jpM: "うし", jpO: "ギュウ" },
-  { k: "米", koH: "쌀", koE: "미", jpM: "こめ", jpO: "ベイ" },
-  { k: "麦", koH: "보리", koE: "맥", jpM: "ばく", jpO: "バク" },
-  { k: "茶", koH: "차", koE: "다", jpM: "ちゃ", jpO: "チャ" },
-  { k: "肉", koH: "고기", koE: "육", jpM: "にく", jpO: "ニク" },
-  { k: "海", koH: "바다", koE: "해", jpM: "うみ", jpO: "カイ" },
-  { k: "空", koH: "빌", koE: "공", jpM: "そら", jpO: "クウ" },
-  { k: "道", koH: "길", koE: "도", jpM: "みち", jpO: "ドウ" },
-  { k: "門", koH: "문", koE: "문", jpM: "もん", jpO: "モン" },
-  { k: "店", koH: "가게", koE: "점", jpM: "みせ", jpO: "テン" },
-  { k: "会", koH: "모일", koE: "회", jpM: "かい", jpO: "カイ" },
-  { k: "社", koH: "모일", koE: "사", jpM: "しゃ", jpO: "シャ" },
-  { k: "友", koH: "벗", koE: "우", jpM: "ゆう", jpO: "ユウ" },
-  { k: "家", koH: "집", koE: "가", jpM: "いえ", jpO: "カ" },
-  { k: "父", koH: "아버지", koE: "부", jpM: "ちち", jpO: "フ" },
-  { k: "母", koH: "어머니", koE: "모", jpM: "はは", jpO: "ボ" },
-  { k: "兄", koH: "맏", koE: "형", jpM: "あに", jpO: "ケイ" },
-  { k: "弟", koH: "아우", koE: "제", jpM: "おとうと", jpO: "テイ" },
-  { k: "姉", koH: "누이", koE: "자", jpM: "あね", jpO: "シ" },
-  { k: "妹", koH: "누이", koE: "매", jpM: "いもうと", jpO: "マイ" },
-  { k: "外", koH: "바깥", koE: "외", jpM: "そと", jpO: "ガイ" },
-  { k: "内", koH: "안", koE: "내", jpM: "うち", jpO: "ナイ" },
-  { k: "前", koH: "앞", koE: "전", jpM: "まえ", jpO: "ゼン" },
-  { k: "後", koH: "뒤", koE: "후", jpM: "うしろ", jpO: "ゴ" },
-  { k: "左", koH: "왼", koE: "좌", jpM: "ひだり", jpO: "サ" },
-  { k: "右", koH: "오른", koE: "우", jpM: "みぎ", jpO: "ウ" },
-  { k: "東", koH: "동녘", koE: "동", jpM: "ひがし", jpO: "トウ" },
-  { k: "西", koH: "서녘", koE: "서", jpM: "にし", jpO: "セイ / サイ" },
-  { k: "南", koH: "남녘", koE: "남", jpM: "みなみ", jpO: "ナン" },
-  { k: "北", koH: "북녘", koE: "북", jpM: "きた", jpO: "ホク" },
-  { k: "春", koH: "봄", koE: "춘", jpM: "はる", jpO: "シュン" },
-  { k: "夏", koH: "여름", koE: "하", jpM: "なつ", jpO: "カ" },
-  { k: "秋", koH: "가을", koE: "추", jpM: "あき", jpO: "シュウ" },
-  { k: "冬", koH: "겨울", koE: "동", jpM: "ふゆ", jpO: "トウ" },
-  { k: "朝", koH: "아침", koE: "조", jpM: "あさ", jpO: "チョウ" },
-  { k: "昼", koH: "낮", koE: "주", jpM: "ひる", jpO: "チュウ" },
-  { k: "夜", koH: "밤", koE: "야", jpM: "よる", jpO: "ヤ" },
-  { k: "明", koH: "밝을", koE: "명", jpM: "めい", jpO: "メイ" },
-  { k: "暗", koH: "어두울", koE: "암", jpM: "あん", jpO: "アン" },
-  { k: "新", koH: "새", koE: "신", jpM: "しん", jpO: "シン" },
-  { k: "古", koH: "옛", koE: "고", jpM: "こ", jpO: "コ" },
-  { k: "高", koH: "높을", koE: "고", jpM: "こう", jpO: "コウ" },
-  { k: "低", koH: "낮을", koE: "저", jpM: "てい", jpO: "テイ" },
-  { k: "長", koH: "길", koE: "장", jpM: "ちょう", jpO: "チョウ" },
-  { k: "短", koH: "짧을", koE: "단", jpM: "たん", jpO: "タン" },
-  { k: "強", koH: "강할", koE: "강", jpM: "きょう", jpO: "キョウ" },
-  { k: "弱", koH: "약할", koE: "약", jpM: "じゃく", jpO: "ジャク" },
-  { k: "多", koH: "많을", koE: "다", jpM: "た", jpO: "タ" },
-  { k: "少", koH: "적을", koE: "소", jpM: "しょう", jpO: "ショウ" },
-  { k: "白", koH: "흰", koE: "백", jpM: "しろ", jpO: "ハク" },
-  { k: "黒", koH: "검을", koE: "흑", jpM: "くろ", jpO: "コク" },
-  { k: "赤", koH: "붉을", koE: "적", jpM: "あか", jpO: "セキ" },
-  { k: "青", koH: "푸를", koE: "청", jpM: "あお", jpO: "セイ / ショウ" },
-  { k: "黄", koH: "누를", koE: "황", jpM: "こう", jpO: "コウ / オウ" },
-  { k: "色", koH: "빛", koE: "색", jpM: "しょく", jpO: "ショク" },
-  { k: "円", koH: "둥글", koE: "원", jpM: "えん", jpO: "エン" },
-  { k: "線", koH: "줄", koE: "선", jpM: "せん", jpO: "セン" },
-  { k: "点", koH: "점", koE: "점", jpM: "てん", jpO: "テン" },
-  { k: "体", koH: "몸", koE: "체", jpM: "たい", jpO: "タイ" },
-  { k: "病", koH: "병", koE: "병", jpM: "びょう", jpO: "ビョウ" },
-  { k: "薬", koH: "약", koE: "약", jpM: "やく", jpO: "ヤク" },
-  { k: "安", koH: "편안할", koE: "안", jpM: "あん", jpO: "アン" },
-  { k: "楽", koH: "즐길", koE: "락", jpM: "がく", jpO: "ガク / ラク" },
-  { k: "歌", koH: "노래", koE: "가", jpM: "か", jpO: "カ" },
-  { k: "画", koH: "그림", koE: "화", jpM: "が", jpO: "ガ" },
-  { k: "工", koH: "장인", koE: "공", jpM: "こう", jpO: "コウ" },
-  { k: "作", koH: "지을", koE: "작", jpM: "さく", jpO: "サク" }
-];
 
 const JP_WORD_EXAMPLES = {
   一: ["一つ", "一日"],
@@ -1059,13 +901,6 @@ function normalizeJapaneseReading(readingText) {
   return katakanaToHiragana(first);
 }
 
-function normalizeSeedJoyoKanjiReadings(seedItems) {
-  return seedItems.map((item) => ({
-    ...item,
-    jpM: item.jpM || normalizeJapaneseReading(item.jpO) || "くんよみなし"
-  }));
-}
-
 function normalizeExampleWord(item, example) {
   if (example !== item.k) {
     return example;
@@ -1108,8 +943,6 @@ function buildExampleText(item) {
   return item.k;
 }
 
-const NORMALIZED_JOYO_KANJI_SEED = normalizeSeedJoyoKanjiReadings(JOYO_KANJI_SEED);
-const JOYO_KANJI_SEED_MAP = new Map(NORMALIZED_JOYO_KANJI_SEED.map((item) => [item.k, item]));
 let JOYO_KANJI = [];
 
 const pageCache = new Map();
@@ -1117,7 +950,6 @@ let mode = "base";
 let currentPage = 1;
 let totalPages = 1;
 let fullList = [];
-let loadError = null;
 
 const gridEl = document.getElementById("grid");
 const pageLabelEl = document.getElementById("pageLabel");
@@ -1128,35 +960,14 @@ const showJapaneseBtn = document.getElementById("showJapanese");
 const showJapaneseExamplesBtn = document.getElementById("showJapaneseExamples");
 const appRoot = document.getElementById("appRoot");
 
-function makeJoyoInfoItem(char, seedItem, detail) {
-  const koH = seedItem?.koH || "뜻";
-  const koE = seedItem?.koE || "음";
-  const kunReading =
-    detail?.kun_readings?.[0] ||
-    seedItem?.jpM ||
-    "くんよみなし";
-  const onReadings = detail?.on_readings;
-  const onReadingText =
-    Array.isArray(onReadings) && onReadings.length > 0
-      ? onReadings.join(" / ")
-      : seedItem?.jpO || "オンよみなし";
-
+function normalizeLoadedJoyoItem(item) {
   return {
-    k: char,
-    koH,
-    koE,
-    jpM: kunReading,
-    jpO: onReadingText
+    k: item.k,
+    koH: item.koH || "뜻",
+    koE: item.koE || "음",
+    jpM: item.jpM || normalizeJapaneseReading(item.jpO) || "くんよみなし",
+    jpO: item.jpO || "オンよみなし"
   };
-}
-
-function buildListFromKanjiChars(chars, detailMap = new Map()) {
-  const targetSize = TARGET_KANJI_COUNT;
-  const uniqueChars = [...new Set(chars)].slice(0, targetSize);
-
-  return uniqueChars.map((char) =>
-    makeJoyoInfoItem(char, JOYO_KANJI_SEED_MAP.get(char), detailMap.get(char))
-  );
 }
 
 function updatePagination() {
@@ -1165,70 +976,44 @@ function updatePagination() {
   currentPage = Math.min(currentPage, totalPages);
 }
 
-async function fetchJoyoKanjiDetails(chars) {
-  const detailMap = new Map();
-  const batchSize = 40;
-
-  for (let i = 0; i < chars.length; i += batchSize) {
-    const batch = chars.slice(i, i + batchSize);
-    const batchResults = await Promise.all(
-      batch.map(async (char) => {
-        try {
-          const detailResponse = await fetch(`${JOYO_KANJI_DETAIL_API_URL}/${encodeURIComponent(char)}`);
-          if (!detailResponse.ok) {
-            return [char, null];
-          }
-          const detail = await detailResponse.json();
-          return [char, detail];
-        } catch (detailError) {
-          console.warn(`Could not load detail for ${char}`, detailError);
-          return [char, null];
-        }
-      })
-    );
-
-    for (const [char, detail] of batchResults) {
-      detailMap.set(char, detail);
-    }
-  }
-
-  return detailMap;
-}
-
 async function initializeKanjiList() {
   try {
-    const response = await fetch(JOYO_KANJI_API_URL);
+    const response = await fetch(JOYO_KANJI_SORTED_JSON_PATH);
     if (!response.ok) {
-      throw new Error(`failed to fetch joyo kanji: ${response.status}`);
+      throw new Error(`failed to fetch sorted joyo kanji: ${response.status}`);
     }
 
     const joyoKanjiRaw = await response.json();
     if (!Array.isArray(joyoKanjiRaw)) {
-      throw new Error("joyo kanji payload is invalid");
+      throw new Error("sorted joyo kanji payload is invalid");
     }
 
-    const joyoKanji = [...new Set(joyoKanjiRaw)];
+    const seen = new Set();
+    const joyoKanji = joyoKanjiRaw.filter((item) => {
+      if (!item || typeof item.k !== "string" || item.k.length === 0 || seen.has(item.k)) {
+        return false;
+      }
+      seen.add(item.k);
+      return true;
+    });
     if (joyoKanji.length < TARGET_KANJI_COUNT) {
-      throw new Error(`joyo kanji payload too short: ${joyoKanji.length}`);
+      throw new Error(`sorted joyo kanji payload too short: ${joyoKanji.length}`);
     }
     if (joyoKanji.length > TARGET_KANJI_COUNT) {
       console.warn(
-        `joyo kanji payload length mismatch: ${joyoKanji.length}. using first ${TARGET_KANJI_COUNT}`
+        `sorted joyo kanji payload length mismatch: ${joyoKanji.length}. using first ${TARGET_KANJI_COUNT}`
       );
     }
-    const normalizedJoyoKanji = joyoKanji.slice(0, TARGET_KANJI_COUNT);
+    const normalizedJoyoKanji = joyoKanji
+      .slice(0, TARGET_KANJI_COUNT)
+      .map(normalizeLoadedJoyoItem);
 
-    const detailMap = await fetchJoyoKanjiDetails(normalizedJoyoKanji);
-
-    JOYO_KANJI = buildListFromKanjiChars(normalizedJoyoKanji, detailMap);
+    JOYO_KANJI = normalizedJoyoKanji;
     fullList = JOYO_KANJI;
-    loadError = null;
   } catch (error) {
-    console.error("Could not load exact Joyo Kanji list.", error);
-    const fallbackChars = NORMALIZED_JOYO_KANJI_SEED.map((item) => item.k);
-    JOYO_KANJI = buildListFromKanjiChars(fallbackChars);
+    console.error("Could not load sorted Joyo Kanji list.", error);
+    JOYO_KANJI = [];
     fullList = JOYO_KANJI;
-    loadError = error;
   }
 
   updatePagination();
@@ -1380,10 +1165,6 @@ bindHoldMode(showJapaneseBtn, "jp");
 bindHoldMode(showJapaneseExamplesBtn, "c");
 
 initializeKanjiList().then(() => {
-  if (loadError) {
-    console.warn("Loaded fallback JOYO_KANJI seed list.");
-  }
-
   renderPage(1);
   applyMode("base");
 });
