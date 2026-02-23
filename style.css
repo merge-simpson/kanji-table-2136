@@ -145,7 +145,7 @@ button.is-active {
   z-index: 2;
 }
 
-.selection-shape-toggle[data-shape-mode="path"]::before {
+.selection-shape-toggle[data-shape-mode="rect"]::before {
   transform: translateX(calc(100% + 0.15rem));
 }
 
