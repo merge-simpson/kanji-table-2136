@@ -943,6 +943,31 @@ function buildExampleText(item) {
   return item.k;
 }
 
+function splitKoreanInfoVariants(text) {
+  return String(text || "")
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function buildKoreanInfoText(item) {
+  const meanings = splitKoreanInfoVariants(item.koH);
+  const readings = splitKoreanInfoVariants(item.koE);
+
+  if (meanings.length === readings.length && meanings.length > 0) {
+    return meanings.map((meaning, index) => `${meaning} ${readings[index]}`).join(" / ");
+  }
+
+  console.warn("koH/koE variant count mismatch. falling back to raw format.", {
+    kanji: item.k,
+    koH: item.koH,
+    koE: item.koE,
+    koHCount: meanings.length,
+    koECount: readings.length
+  });
+  return `${item.koH} / ${item.koE}`;
+}
+
 let JOYO_KANJI = [];
 
 const pageCache = new Map();
@@ -1053,7 +1078,7 @@ function renderCell(item) {
 
   const koInfo = document.createElement("div");
   koInfo.className = "ko-info";
-  koInfo.textContent = `${item.koH} / ${item.koE}`;
+  koInfo.textContent = buildKoreanInfoText(item);
 
   const jpOverlay = document.createElement("div");
   jpOverlay.className = "jp-overlay";
