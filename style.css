@@ -247,6 +247,18 @@ button.is-active {
   font-size: 0.84rem;
 }
 
+.selection-marquee {
+  position: fixed;
+  z-index: 45;
+  border: 1px dashed #58763c;
+  background: #8fb36b22;
+  pointer-events: none;
+}
+
+.selection-marquee[hidden] {
+  display: none;
+}
+
 @media (max-width: 980px) {
   .grid {
     grid-template-columns: repeat(8, minmax(0, 1fr));

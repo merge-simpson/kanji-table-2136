@@ -981,6 +981,7 @@ const gridEl = document.getElementById("grid");
 const pageLabelEl = document.getElementById("pageLabel");
 const prevBtn = document.getElementById("prevPage");
 const nextBtn = document.getElementById("nextPage");
+const selectionShapeToggleBtn = document.getElementById("selectionShapeToggle");
 const toggleModeButtons = Array.from(document.querySelectorAll("[data-toggle-mode]"));
 const holdModeButtons = Array.from(document.querySelectorAll("[data-hold-mode]"));
 const appRoot = document.getElementById("appRoot");
@@ -989,10 +990,16 @@ let activeHoldMode = null;
 const memorizedKanji = loadMemorizedKanji();
 const tempSelectedCells = new Set();
 let suppressNextGridClick = false;
+let isRectSelectionMode = false;
+const DRAG_SELECTION_START_DISTANCE = 4;
 const dragSelectionState = {
   isDragging: false,
   pointerId: null,
-  hasMultiple: false
+  hasDragged: false,
+  startX: 0,
+  startY: 0,
+  currentX: 0,
+  currentY: 0
 };
 const selectionActionPopover = createSelectionActionPopover();
 const selectionActionCountEl = selectionActionPopover.querySelector("[data-selection-count]");
@@ -1001,6 +1008,7 @@ const selectionActionUnmemorizeBtn = selectionActionPopover.querySelector(
   "[data-selection-action='unmemorize']"
 );
 const selectionActionCloseBtn = selectionActionPopover.querySelector("[data-selection-action='close']");
+const selectionMarqueeEl = createSelectionMarquee();
 
 function createSelectionActionPopover() {
   const popover = document.createElement("aside");
@@ -1017,6 +1025,14 @@ function createSelectionActionPopover() {
   `;
   document.body.append(popover);
   return popover;
+}
+
+function createSelectionMarquee() {
+  const marquee = document.createElement("div");
+  marquee.className = "selection-marquee";
+  marquee.hidden = true;
+  document.body.append(marquee);
+  return marquee;
 }
 
 function loadMemorizedKanji() {
@@ -1105,6 +1121,7 @@ function clearTempSelection() {
   });
   tempSelectedCells.clear();
   hideSelectionActionPopover();
+  hideSelectionMarquee();
 }
 
 function addTempSelectedCell(cell) {
@@ -1118,6 +1135,10 @@ function addTempSelectedCell(cell) {
 
 function hideSelectionActionPopover() {
   selectionActionPopover.hidden = true;
+}
+
+function hideSelectionMarquee() {
+  selectionMarqueeEl.hidden = true;
 }
 
 function positionSelectionActionPopover() {
@@ -1166,6 +1187,71 @@ function showSelectionActionPopover() {
   positionSelectionActionPopover();
 }
 
+function updateSelectionMarquee() {
+  if (!isRectSelectionMode || !dragSelectionState.isDragging || !dragSelectionState.hasDragged) {
+    hideSelectionMarquee();
+    return;
+  }
+
+  const left = Math.min(dragSelectionState.startX, dragSelectionState.currentX);
+  const top = Math.min(dragSelectionState.startY, dragSelectionState.currentY);
+  const width = Math.abs(dragSelectionState.currentX - dragSelectionState.startX);
+  const height = Math.abs(dragSelectionState.currentY - dragSelectionState.startY);
+
+  selectionMarqueeEl.hidden = false;
+  selectionMarqueeEl.style.left = `${Math.round(left)}px`;
+  selectionMarqueeEl.style.top = `${Math.round(top)}px`;
+  selectionMarqueeEl.style.width = `${Math.max(1, Math.round(width))}px`;
+  selectionMarqueeEl.style.height = `${Math.max(1, Math.round(height))}px`;
+}
+
+function setTempSelection(cells) {
+  const nextCells = new Set(cells);
+
+  tempSelectedCells.forEach((cell) => {
+    if (!nextCells.has(cell)) {
+      cell.classList.remove("is-temp-selected");
+      tempSelectedCells.delete(cell);
+    }
+  });
+
+  nextCells.forEach((cell) => {
+    addTempSelectedCell(cell);
+  });
+}
+
+function getCellsInsideDragRect() {
+  const left = Math.min(dragSelectionState.startX, dragSelectionState.currentX);
+  const right = Math.max(dragSelectionState.startX, dragSelectionState.currentX);
+  const top = Math.min(dragSelectionState.startY, dragSelectionState.currentY);
+  const bottom = Math.max(dragSelectionState.startY, dragSelectionState.currentY);
+
+  const allCells = gridEl.querySelectorAll(".cell[data-kanji]");
+  const selectedCells = [];
+
+  allCells.forEach((cell) => {
+    const rect = cell.getBoundingClientRect();
+    const intersects =
+      rect.left <= right && rect.right >= left && rect.top <= bottom && rect.bottom >= top;
+
+    if (intersects) {
+      selectedCells.push(cell);
+    }
+  });
+
+  return selectedCells;
+}
+
+function updateSelectionShapeToggleUI() {
+  if (!selectionShapeToggleBtn) {
+    return;
+  }
+
+  selectionShapeToggleBtn.classList.toggle("is-active", isRectSelectionMode);
+  selectionShapeToggleBtn.setAttribute("aria-pressed", isRectSelectionMode ? "true" : "false");
+  selectionShapeToggleBtn.textContent = isRectSelectionMode ? "영역 선택 ON" : "영역 선택";
+}
+
 function endDragSelection(pointerId) {
   if (!dragSelectionState.isDragging) {
     return;
@@ -1175,7 +1261,11 @@ function endDragSelection(pointerId) {
     return;
   }
 
-  if (tempSelectedCells.size > 0) {
+  hideSelectionMarquee();
+
+  if (!dragSelectionState.hasDragged) {
+    clearTempSelection();
+  } else if (tempSelectedCells.size > 0) {
     showSelectionActionPopover();
     suppressNextGridClick = true;
   } else {
@@ -1184,7 +1274,11 @@ function endDragSelection(pointerId) {
 
   dragSelectionState.isDragging = false;
   dragSelectionState.pointerId = null;
-  dragSelectionState.hasMultiple = false;
+  dragSelectionState.hasDragged = false;
+  dragSelectionState.startX = 0;
+  dragSelectionState.startY = 0;
+  dragSelectionState.currentX = 0;
+  dragSelectionState.currentY = 0;
 }
 
 function normalizeLoadedJoyoItem(item) {
@@ -1350,7 +1444,11 @@ gridEl.addEventListener("pointerdown", (event) => {
   clearTempSelection();
   dragSelectionState.isDragging = true;
   dragSelectionState.pointerId = event.pointerId;
-  dragSelectionState.hasMultiple = false;
+  dragSelectionState.hasDragged = false;
+  dragSelectionState.startX = event.clientX;
+  dragSelectionState.startY = event.clientY;
+  dragSelectionState.currentX = event.clientX;
+  dragSelectionState.currentY = event.clientY;
   addTempSelectedCell(cell);
 
   if (typeof gridEl.setPointerCapture === "function") {
@@ -1369,17 +1467,35 @@ gridEl.addEventListener("pointermove", (event) => {
     return;
   }
 
+  dragSelectionState.currentX = event.clientX;
+  dragSelectionState.currentY = event.clientY;
+
+  if (!dragSelectionState.hasDragged) {
+    const dx = dragSelectionState.currentX - dragSelectionState.startX;
+    const dy = dragSelectionState.currentY - dragSelectionState.startY;
+    const distance = Math.hypot(dx, dy);
+    if (distance >= DRAG_SELECTION_START_DISTANCE) {
+      dragSelectionState.hasDragged = true;
+    }
+  }
+
+  if (!dragSelectionState.hasDragged) {
+    return;
+  }
+
+  if (isRectSelectionMode) {
+    setTempSelection(getCellsInsideDragRect());
+    updateSelectionMarquee();
+    return;
+  }
+
   const hoveredElement = document.elementFromPoint(event.clientX, event.clientY);
   const cell = hoveredElement?.closest?.(".cell[data-kanji]");
   if (!cell || !gridEl.contains(cell)) {
     return;
   }
 
-  const beforeSize = tempSelectedCells.size;
   addTempSelectedCell(cell);
-  if (tempSelectedCells.size > beforeSize && tempSelectedCells.size > 1) {
-    dragSelectionState.hasMultiple = true;
-  }
 });
 
 gridEl.addEventListener("pointerup", (event) => {
@@ -1457,10 +1573,12 @@ document.addEventListener("pointerdown", (event) => {
 
 window.addEventListener("resize", () => {
   positionSelectionActionPopover();
+  updateSelectionMarquee();
 });
 
 window.addEventListener("scroll", () => {
   positionSelectionActionPopover();
+  updateSelectionMarquee();
 });
 
 document.addEventListener("keydown", (event) => {
@@ -1543,6 +1661,15 @@ toggleModeButtons.forEach((button) => {
 holdModeButtons.forEach((button) => {
   bindHoldMode(button, button.dataset.holdMode);
 });
+
+if (selectionShapeToggleBtn) {
+  selectionShapeToggleBtn.addEventListener("click", () => {
+    isRectSelectionMode = !isRectSelectionMode;
+    updateSelectionShapeToggleUI();
+    clearTempSelection();
+  });
+  updateSelectionShapeToggleUI();
+}
 
 initializeKanjiList().then(() => {
   renderPage(1);
