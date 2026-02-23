@@ -987,6 +987,37 @@ const appRoot = document.getElementById("appRoot");
 let pinnedMode = "base";
 let activeHoldMode = null;
 const memorizedKanji = loadMemorizedKanji();
+const tempSelectedCells = new Set();
+let suppressNextGridClick = false;
+const dragSelectionState = {
+  isDragging: false,
+  pointerId: null,
+  hasMultiple: false
+};
+const selectionActionPopover = createSelectionActionPopover();
+const selectionActionCountEl = selectionActionPopover.querySelector("[data-selection-count]");
+const selectionActionMemorizeBtn = selectionActionPopover.querySelector("[data-selection-action='memorize']");
+const selectionActionUnmemorizeBtn = selectionActionPopover.querySelector(
+  "[data-selection-action='unmemorize']"
+);
+const selectionActionCloseBtn = selectionActionPopover.querySelector("[data-selection-action='close']");
+
+function createSelectionActionPopover() {
+  const popover = document.createElement("aside");
+  popover.className = "selection-action-popover";
+  popover.hidden = true;
+  popover.setAttribute("aria-live", "polite");
+  popover.innerHTML = `
+    <div class="selection-action-popover__count" data-selection-count>0개 선택</div>
+    <div class="selection-action-popover__buttons">
+      <button type="button" data-selection-action="memorize">암기 체크</button>
+      <button type="button" data-selection-action="unmemorize">암기 체크 해제</button>
+      <button type="button" data-selection-action="close">닫기</button>
+    </div>
+  `;
+  document.body.append(popover);
+  return popover;
+}
 
 function loadMemorizedKanji() {
   try {
@@ -1036,6 +1067,124 @@ function toggleMemorizedKanji(cell) {
   }
 
   saveMemorizedKanji();
+}
+
+function setMemorizedKanjiForCells(cells, shouldMemorize) {
+  let changed = false;
+
+  cells.forEach((cell) => {
+    const kanji = cell?.dataset?.kanji;
+    if (!kanji) {
+      return;
+    }
+
+    if (shouldMemorize) {
+      if (!memorizedKanji.has(kanji)) {
+        memorizedKanji.add(kanji);
+        changed = true;
+      }
+      setCellMemorizedState(cell, true);
+      return;
+    }
+
+    if (memorizedKanji.has(kanji)) {
+      memorizedKanji.delete(kanji);
+      changed = true;
+    }
+    setCellMemorizedState(cell, false);
+  });
+
+  if (changed) {
+    saveMemorizedKanji();
+  }
+}
+
+function clearTempSelection() {
+  tempSelectedCells.forEach((cell) => {
+    cell.classList.remove("is-temp-selected");
+  });
+  tempSelectedCells.clear();
+  hideSelectionActionPopover();
+}
+
+function addTempSelectedCell(cell) {
+  if (!cell || tempSelectedCells.has(cell)) {
+    return;
+  }
+
+  tempSelectedCells.add(cell);
+  cell.classList.add("is-temp-selected");
+}
+
+function hideSelectionActionPopover() {
+  selectionActionPopover.hidden = true;
+}
+
+function positionSelectionActionPopover() {
+  if (tempSelectedCells.size === 0 || selectionActionPopover.hidden) {
+    return;
+  }
+
+  const selectedRects = [...tempSelectedCells].map((cell) => cell.getBoundingClientRect());
+  const bounds = selectedRects.reduce(
+    (acc, rect) => ({
+      left: Math.min(acc.left, rect.left),
+      top: Math.min(acc.top, rect.top),
+      right: Math.max(acc.right, rect.right),
+      bottom: Math.max(acc.bottom, rect.bottom)
+    }),
+    { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity }
+  );
+
+  const gap = 10;
+  const viewportPadding = 8;
+  const popoverRect = selectionActionPopover.getBoundingClientRect();
+  let left = bounds.right + gap;
+  let top = bounds.top;
+
+  if (left + popoverRect.width > window.innerWidth - viewportPadding) {
+    left = Math.max(viewportPadding, bounds.left - gap - popoverRect.width);
+  }
+
+  if (top + popoverRect.height > window.innerHeight - viewportPadding) {
+    top = Math.max(viewportPadding, window.innerHeight - viewportPadding - popoverRect.height);
+  }
+
+  top = Math.max(viewportPadding, top);
+  selectionActionPopover.style.left = `${Math.round(left)}px`;
+  selectionActionPopover.style.top = `${Math.round(top)}px`;
+}
+
+function showSelectionActionPopover() {
+  if (tempSelectedCells.size === 0) {
+    hideSelectionActionPopover();
+    return;
+  }
+
+  selectionActionCountEl.textContent = `${tempSelectedCells.size}개 선택`;
+  selectionActionPopover.hidden = false;
+  positionSelectionActionPopover();
+}
+
+function endDragSelection(pointerId) {
+  if (!dragSelectionState.isDragging) {
+    return;
+  }
+
+  if (pointerId != null && dragSelectionState.pointerId !== pointerId) {
+    return;
+  }
+
+  if (tempSelectedCells.size > 0) {
+    showSelectionActionPopover();
+    suppressNextGridClick = true;
+  } else {
+    clearTempSelection();
+  }
+
+  dragSelectionState.isDragging = false;
+  dragSelectionState.pointerId = null;
+  dragSelectionState.hasMultiple = false;
 }
 
 function normalizeLoadedJoyoItem(item) {
@@ -1175,6 +1324,7 @@ function applyMode(nextMode) {
 function renderPage(page) {
   const safePage = Math.min(totalPages, Math.max(1, page));
   currentPage = safePage;
+  clearTempSelection();
 
   const data = getPageData(safePage);
   gridEl.replaceChildren(...data.map(renderCell));
@@ -1187,12 +1337,76 @@ function renderPage(page) {
 prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
 nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
 
-gridEl.addEventListener("click", (event) => {
+gridEl.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0) {
+    return;
+  }
+
   const cell = event.target.closest(".cell[data-kanji]");
   if (!cell) {
     return;
   }
 
+  clearTempSelection();
+  dragSelectionState.isDragging = true;
+  dragSelectionState.pointerId = event.pointerId;
+  dragSelectionState.hasMultiple = false;
+  addTempSelectedCell(cell);
+
+  if (typeof gridEl.setPointerCapture === "function") {
+    gridEl.setPointerCapture(event.pointerId);
+  }
+
+  event.preventDefault();
+});
+
+gridEl.addEventListener("pointermove", (event) => {
+  if (!dragSelectionState.isDragging || dragSelectionState.pointerId !== event.pointerId) {
+    return;
+  }
+
+  if ((event.buttons & 1) !== 1) {
+    return;
+  }
+
+  const hoveredElement = document.elementFromPoint(event.clientX, event.clientY);
+  const cell = hoveredElement?.closest?.(".cell[data-kanji]");
+  if (!cell || !gridEl.contains(cell)) {
+    return;
+  }
+
+  const beforeSize = tempSelectedCells.size;
+  addTempSelectedCell(cell);
+  if (tempSelectedCells.size > beforeSize && tempSelectedCells.size > 1) {
+    dragSelectionState.hasMultiple = true;
+  }
+});
+
+gridEl.addEventListener("pointerup", (event) => {
+  endDragSelection(event.pointerId);
+});
+
+gridEl.addEventListener("pointercancel", (event) => {
+  endDragSelection(event.pointerId);
+});
+
+gridEl.addEventListener("lostpointercapture", (event) => {
+  endDragSelection(event.pointerId);
+});
+
+gridEl.addEventListener("click", (event) => {
+  if (suppressNextGridClick) {
+    suppressNextGridClick = false;
+    event.preventDefault();
+    return;
+  }
+
+  const cell = event.target.closest(".cell[data-kanji]");
+  if (!cell) {
+    return;
+  }
+
+  clearTempSelection();
   toggleMemorizedKanji(cell);
 });
 
@@ -1207,7 +1421,46 @@ gridEl.addEventListener("keydown", (event) => {
   }
 
   event.preventDefault();
+  clearTempSelection();
   toggleMemorizedKanji(cell);
+});
+
+selectionActionMemorizeBtn.addEventListener("click", () => {
+  setMemorizedKanjiForCells(tempSelectedCells, true);
+  clearTempSelection();
+});
+
+selectionActionUnmemorizeBtn.addEventListener("click", () => {
+  setMemorizedKanjiForCells(tempSelectedCells, false);
+  clearTempSelection();
+});
+
+selectionActionCloseBtn.addEventListener("click", () => {
+  clearTempSelection();
+});
+
+document.addEventListener("pointerdown", (event) => {
+  if (tempSelectedCells.size === 0) {
+    return;
+  }
+
+  if (selectionActionPopover.contains(event.target)) {
+    return;
+  }
+
+  if (gridEl.contains(event.target)) {
+    return;
+  }
+
+  clearTempSelection();
+});
+
+window.addEventListener("resize", () => {
+  positionSelectionActionPopover();
+});
+
+window.addEventListener("scroll", () => {
+  positionSelectionActionPopover();
 });
 
 document.addEventListener("keydown", (event) => {
@@ -1219,6 +1472,11 @@ document.addEventListener("keydown", (event) => {
     tagName === "SELECT";
 
   if (isEditable) {
+    return;
+  }
+
+  if (event.key === "Escape" && tempSelectedCells.size > 0) {
+    clearTempSelection();
     return;
   }
 
