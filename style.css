@@ -97,9 +97,16 @@ button.is-active {
   align-items: center;
   gap: 0.15rem;
   padding: 0.18rem;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   border-radius: 999px;
   border-color: #a9b596;
   background: linear-gradient(180deg, #f8fbf2 0%, #eef3e4 100%);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .selection-shape-toggle:hover {
@@ -109,9 +116,40 @@ button.is-active {
 .selection-shape-toggle.is-active {
   background: linear-gradient(180deg, #f7fbef 0%, #edf5de 100%);
   border-color: #8ea36a;
+  box-shadow: inset 0 0 0 1px #eff6de;
+}
+
+.selection-shape-toggle::before {
+  content: "";
+  position: absolute;
+  top: 0.18rem;
+  bottom: 0.18rem;
+  left: 0.18rem;
+  width: calc((100% - 0.51rem) / 2);
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow:
+    0 1px 3px #1a23151c,
+    inset 0 1px 0 #ffffff;
+  transform: translateX(0);
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.9, 0.2, 1),
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+  z-index: 0;
+}
+
+.selection-shape-toggle[data-shape-mode="rect"]::before {
+  transform: translateX(calc(100% + 0.15rem));
+}
+
+.selection-shape-toggle.is-active::before {
+  background: #fbfff4;
 }
 
 .selection-shape-toggle__option {
+  position: relative;
+  z-index: 1;
   min-width: 3.05rem;
   padding: 0.28rem 0.48rem;
   border-radius: 999px;
@@ -122,16 +160,29 @@ button.is-active {
   color: #56624f;
   text-align: center;
   transition:
-    background-color 0.15s ease,
     color 0.15s ease,
-    box-shadow 0.15s ease;
+    transform 0.22s cubic-bezier(0.2, 0.9, 0.2, 1),
+    letter-spacing 0.18s ease;
 }
 
 .selection-shape-toggle[data-shape-mode="path"] [data-shape-option="path"],
 .selection-shape-toggle[data-shape-mode="rect"] [data-shape-option="rect"] {
   color: #1e291a;
-  background: #ffffff;
-  box-shadow: 0 1px 3px #1a23151c;
+  transform: translateY(-1px);
+  letter-spacing: 0.07em;
+}
+
+.selection-shape-toggle[data-shape-mode="path"] [data-shape-option="rect"],
+.selection-shape-toggle[data-shape-mode="rect"] [data-shape-option="path"] {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selection-shape-toggle,
+  .selection-shape-toggle::before,
+  .selection-shape-toggle__option {
+    transition: none;
+  }
 }
 
 .grid {
