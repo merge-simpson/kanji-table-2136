@@ -217,15 +217,15 @@ button.is-active {
 
 .cell[data-kanji] {
   cursor: pointer;
-  background: #dfe8c9;
+  background: #fff;
 }
 
 .cell.is-unmemorized {
-  background: #dfe8c9;
+  background: #fff;
 }
 
 .cell.is-memorized {
-  background: #fff;
+  background: #dfe8c9;
 }
 
 .cell.is-temp-selected {
@@ -250,9 +250,9 @@ button.is-active {
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: #eef5e3;
-  color: #486032;
-  border: 1px solid #b6c69d;
+  background: #5f7d42;
+  color: #fff;
+  border: 1px solid #4a6333;
   font-size: 0.72rem;
   font-weight: 700;
   line-height: 1;
