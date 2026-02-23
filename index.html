@@ -19,14 +19,20 @@
           </button>
         </div>
         <div class="modes">
-          <button
-            id="selectionShapeToggle"
-            type="button"
-            aria-pressed="false"
-            title="드래그를 사각 영역 선택으로 전환"
-          >
-            영역 선택
-          </button>
+          <div class="selection-shape-control" aria-label="영역선택 방식">
+            <span class="selection-shape-label">영역선택</span>
+            <button
+              id="selectionShapeToggle"
+              class="selection-shape-toggle"
+              type="button"
+              aria-pressed="false"
+              aria-label="영역선택 방식 전환"
+              title="드래그 선택 방식을 PATH와 RECT 사이에서 전환"
+            >
+              <span class="selection-shape-toggle__option" data-shape-option="path">PATH</span>
+              <span class="selection-shape-toggle__option" data-shape-option="rect">RECT</span>
+            </button>
+          </div>
           <div class="mode-group" aria-label="누르면 계속 보여 주기">
             <span class="mode-title">고정</span>
             <button type="button" data-toggle-mode="ko" title="한국 훈/음 고정">

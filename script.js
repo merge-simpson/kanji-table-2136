@@ -1249,7 +1249,10 @@ function updateSelectionShapeToggleUI() {
 
   selectionShapeToggleBtn.classList.toggle("is-active", isRectSelectionMode);
   selectionShapeToggleBtn.setAttribute("aria-pressed", isRectSelectionMode ? "true" : "false");
-  selectionShapeToggleBtn.textContent = isRectSelectionMode ? "영역 선택 ON" : "영역 선택";
+  selectionShapeToggleBtn.dataset.shapeMode = isRectSelectionMode ? "rect" : "path";
+  selectionShapeToggleBtn.title = isRectSelectionMode
+    ? "현재 RECT: 사각 영역 기준으로 선택"
+    : "현재 PATH: 드래그 경로를 따라 선택";
 }
 
 function endDragSelection(pointerId, options = {}) {

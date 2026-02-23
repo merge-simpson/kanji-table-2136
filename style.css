@@ -47,6 +47,18 @@ body {
   flex-wrap: wrap;
 }
 
+.selection-shape-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.selection-shape-label {
+  font-size: 0.8rem;
+  color: #4f5c4b;
+  white-space: nowrap;
+}
+
 .mode-group {
   display: flex;
   align-items: center;
@@ -78,6 +90,48 @@ button:hover {
 button.is-active {
   background: #dce8c3;
   border-color: #6f7d45;
+}
+
+.selection-shape-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.18rem;
+  border-radius: 999px;
+  border-color: #a9b596;
+  background: linear-gradient(180deg, #f8fbf2 0%, #eef3e4 100%);
+}
+
+.selection-shape-toggle:hover {
+  background: linear-gradient(180deg, #fdfef9 0%, #edf4df 100%);
+}
+
+.selection-shape-toggle.is-active {
+  background: linear-gradient(180deg, #f7fbef 0%, #edf5de 100%);
+  border-color: #8ea36a;
+}
+
+.selection-shape-toggle__option {
+  min-width: 3.05rem;
+  padding: 0.28rem 0.48rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: #56624f;
+  text-align: center;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.selection-shape-toggle[data-shape-mode="path"] [data-shape-option="path"],
+.selection-shape-toggle[data-shape-mode="rect"] [data-shape-option="rect"] {
+  color: #1e291a;
+  background: #ffffff;
+  box-shadow: 0 1px 3px #1a23151c;
 }
 
 .grid {
