@@ -3,6 +3,7 @@ const DESKTOP_COLUMNS = 10;
 const PAGE_SIZE = DESKTOP_ROWS * DESKTOP_COLUMNS;
 const TARGET_KANJI_COUNT = 2136;
 const JOYO_KANJI_SORTED_JSON_PATH = "./joyo-kanji.sorted.json";
+const MEMORIZED_KANJI_STORAGE_KEY = "memorized-kanji-list-v1";
 
 
 const JP_WORD_EXAMPLES = {
@@ -985,6 +986,57 @@ const holdModeButtons = Array.from(document.querySelectorAll("[data-hold-mode]")
 const appRoot = document.getElementById("appRoot");
 let pinnedMode = "base";
 let activeHoldMode = null;
+const memorizedKanji = loadMemorizedKanji();
+
+function loadMemorizedKanji() {
+  try {
+    const raw = localStorage.getItem(MEMORIZED_KANJI_STORAGE_KEY);
+    if (!raw) {
+      return new Set();
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return new Set();
+    }
+
+    return new Set(parsed.filter((value) => typeof value === "string" && value.length > 0));
+  } catch (error) {
+    console.warn("Could not load memorized kanji state from localStorage.", error);
+    return new Set();
+  }
+}
+
+function saveMemorizedKanji() {
+  try {
+    localStorage.setItem(MEMORIZED_KANJI_STORAGE_KEY, JSON.stringify([...memorizedKanji]));
+  } catch (error) {
+    console.warn("Could not save memorized kanji state to localStorage.", error);
+  }
+}
+
+function setCellMemorizedState(cell, isMemorized) {
+  cell.classList.toggle("is-memorized", isMemorized);
+  cell.classList.toggle("is-unmemorized", !isMemorized);
+  cell.setAttribute("aria-pressed", isMemorized ? "true" : "false");
+}
+
+function toggleMemorizedKanji(cell) {
+  const kanji = cell?.dataset?.kanji;
+  if (!kanji) {
+    return;
+  }
+
+  if (memorizedKanji.has(kanji)) {
+    memorizedKanji.delete(kanji);
+    setCellMemorizedState(cell, false);
+  } else {
+    memorizedKanji.add(kanji);
+    setCellMemorizedState(cell, true);
+  }
+
+  saveMemorizedKanji();
+}
 
 function normalizeLoadedJoyoItem(item) {
   return {
@@ -1072,6 +1124,11 @@ function renderCell(item) {
     return cell;
   }
 
+  cell.dataset.kanji = item.k;
+  cell.setAttribute("role", "button");
+  cell.tabIndex = 0;
+  setCellMemorizedState(cell, memorizedKanji.has(item.k));
+
   const hanja = document.createElement("div");
   hanja.className = "hanja";
   hanja.textContent = item.k;
@@ -1129,6 +1186,29 @@ function renderPage(page) {
 
 prevBtn.addEventListener("click", () => renderPage(currentPage - 1));
 nextBtn.addEventListener("click", () => renderPage(currentPage + 1));
+
+gridEl.addEventListener("click", (event) => {
+  const cell = event.target.closest(".cell[data-kanji]");
+  if (!cell) {
+    return;
+  }
+
+  toggleMemorizedKanji(cell);
+});
+
+gridEl.addEventListener("keydown", (event) => {
+  if (event.key !== " " && event.key !== "Enter") {
+    return;
+  }
+
+  const cell = event.target.closest(".cell[data-kanji]");
+  if (!cell) {
+    return;
+  }
+
+  event.preventDefault();
+  toggleMemorizedKanji(cell);
+});
 
 document.addEventListener("keydown", (event) => {
   const tagName = event.target?.tagName;

@@ -96,6 +96,45 @@ button.is-active {
   place-items: center;
   text-align: center;
   overflow: hidden;
+  transition: background-color 0.15s ease;
+}
+
+.cell[data-kanji] {
+  cursor: pointer;
+  background: #dfe8c9;
+}
+
+.cell.is-unmemorized {
+  background: #dfe8c9;
+}
+
+.cell.is-memorized {
+  background: #fff;
+}
+
+.cell[data-kanji]:focus-visible {
+  outline: 2px solid #6f7d45;
+  outline-offset: -2px;
+}
+
+.cell.is-memorized::after {
+  content: "✓";
+  position: absolute;
+  top: 0.18rem;
+  right: 0.22rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #eef5e3;
+  color: #486032;
+  border: 1px solid #b6c69d;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .cell:nth-child(10n) {
