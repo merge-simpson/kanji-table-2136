@@ -101,8 +101,11 @@ button.is-active {
   overflow: hidden;
   isolation: isolate;
   border-radius: 999px;
-  border-color: #a9b596;
-  background: linear-gradient(180deg, #f8fbf2 0%, #eef3e4 100%);
+  border-color: #5f8446;
+  background: linear-gradient(180deg, #86c85b 0%, #5ea93b 100%);
+  box-shadow:
+    inset 0 1px 0 #c6ecab59,
+    0 1px 2px #2433141f;
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
@@ -110,13 +113,16 @@ button.is-active {
 }
 
 .selection-shape-toggle:hover {
-  background: linear-gradient(180deg, #fdfef9 0%, #edf4df 100%);
+  background: linear-gradient(180deg, #93d467 0%, #65b740 100%);
+  border-color: #557b3d;
 }
 
 .selection-shape-toggle.is-active {
-  background: linear-gradient(180deg, #f7fbef 0%, #edf5de 100%);
-  border-color: #8ea36a;
-  box-shadow: inset 0 0 0 1px #eff6de;
+  background: linear-gradient(180deg, #7ecb4f 0%, #529d34 100%);
+  border-color: #4b7734;
+  box-shadow:
+    inset 0 1px 0 #d3f5bb40,
+    0 1px 2px #1f2f151f;
 }
 
 .selection-shape-toggle::before {
@@ -136,15 +142,15 @@ button.is-active {
     transform 0.22s cubic-bezier(0.2, 0.9, 0.2, 1),
     background-color 0.18s ease,
     box-shadow 0.18s ease;
-  z-index: 0;
+  z-index: 2;
 }
 
-.selection-shape-toggle[data-shape-mode="rect"]::before {
+.selection-shape-toggle[data-shape-mode="path"]::before {
   transform: translateX(calc(100% + 0.15rem));
 }
 
 .selection-shape-toggle.is-active::before {
-  background: #fbfff4;
+  background: #fefefe;
 }
 
 .selection-shape-toggle__option {
@@ -157,17 +163,21 @@ button.is-active {
   font-weight: 700;
   letter-spacing: 0.05em;
   line-height: 1;
-  color: #56624f;
+  color: #ffffff00;
   text-align: center;
+  text-shadow: none;
   transition:
     color 0.15s ease,
     transform 0.22s cubic-bezier(0.2, 0.9, 0.2, 1),
-    letter-spacing 0.18s ease;
+    letter-spacing 0.18s ease,
+    text-shadow 0.18s ease;
 }
 
 .selection-shape-toggle[data-shape-mode="path"] [data-shape-option="path"],
 .selection-shape-toggle[data-shape-mode="rect"] [data-shape-option="rect"] {
-  color: #1e291a;
+  z-index: 3;
+  color: #f8fff1;
+  text-shadow: 0 1px 1px #2d4d1e66;
   transform: translateY(-1px);
   letter-spacing: 0.07em;
 }
