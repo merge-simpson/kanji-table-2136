@@ -1252,7 +1252,9 @@ function updateSelectionShapeToggleUI() {
   selectionShapeToggleBtn.textContent = isRectSelectionMode ? "영역 선택 ON" : "영역 선택";
 }
 
-function endDragSelection(pointerId) {
+function endDragSelection(pointerId, options = {}) {
+  const { commitSinglePressToggle = false } = options;
+
   if (!dragSelectionState.isDragging) {
     return;
   }
@@ -1264,7 +1266,14 @@ function endDragSelection(pointerId) {
   hideSelectionMarquee();
 
   if (!dragSelectionState.hasDragged) {
-    clearTempSelection();
+    if (commitSinglePressToggle && tempSelectedCells.size === 1) {
+      const [singleCell] = tempSelectedCells;
+      clearTempSelection();
+      toggleMemorizedKanji(singleCell);
+      suppressNextGridClick = true;
+    } else {
+      clearTempSelection();
+    }
   } else if (tempSelectedCells.size > 0) {
     showSelectionActionPopover();
     suppressNextGridClick = true;
@@ -1499,7 +1508,7 @@ gridEl.addEventListener("pointermove", (event) => {
 });
 
 gridEl.addEventListener("pointerup", (event) => {
-  endDragSelection(event.pointerId);
+  endDragSelection(event.pointerId, { commitSinglePressToggle: true });
 });
 
 gridEl.addEventListener("pointercancel", (event) => {
