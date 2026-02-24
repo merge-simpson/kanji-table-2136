@@ -3,7 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>한자 표</title>
+    <title>Kanji 2136 - 상용한자 표</title>
+    <meta
+      name="description"
+      content="일본 상용한자 2136자를 표 형태로 탐색하고, 한국 훈/음과 일본어 뜻/음 및 예시를 빠르게 확인할 수 있는 페이지입니다."
+    />
+    <meta property="og:title" content="Kanji 2136 - 상용한자 표" />
+    <meta
+      property="og:description"
+      content="일본 상용한자 2136자를 표 형태로 탐색하고, 한국 훈/음과 일본어 뜻/음 및 예시를 빠르게 확인할 수 있는 페이지입니다."
+    />
+    <meta property="og:image" content="assets/og/OG.webp" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Kanji 2136 - 상용한자 표" />
+    <meta
+      name="twitter:description"
+      content="일본 상용한자 2136자를 표 형태로 탐색하고, 한국 훈/음과 일본어 뜻/음 및 예시를 빠르게 확인할 수 있는 페이지입니다."
+    />
+    <meta name="twitter:image" content="assets/og/OG.webp" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -29,8 +47,16 @@
               aria-label="영역선택 방식 전환"
               title="드래그 선택 방식을 PATH와 RECT 사이에서 전환"
             >
-              <span class="selection-shape-toggle__option" data-shape-option="rect">RECT</span>
-              <span class="selection-shape-toggle__option" data-shape-option="path">PATH</span>
+              <span
+                class="selection-shape-toggle__option"
+                data-shape-option="rect"
+                >RECT</span
+              >
+              <span
+                class="selection-shape-toggle__option"
+                data-shape-option="path"
+                >PATH</span
+              >
             </button>
           </div>
           <div class="mode-group" aria-label="누르면 계속 보여 주기">
@@ -38,7 +64,11 @@
             <button type="button" data-toggle-mode="ko" title="한국 훈/음 고정">
               한
             </button>
-            <button type="button" data-toggle-mode="jp" title="일본어 뜻/음 고정">
+            <button
+              type="button"
+              data-toggle-mode="jp"
+              title="일본어 뜻/음 고정"
+            >
               일
             </button>
             <button type="button" data-toggle-mode="c" title="일본어 예시 고정">
@@ -47,13 +77,25 @@
           </div>
           <div class="mode-group" aria-label="누르는 동안만 보여 주기">
             <span class="mode-title">홀드</span>
-            <button type="button" data-hold-mode="ko" title="누르는 동안 한국 훈/음">
+            <button
+              type="button"
+              data-hold-mode="ko"
+              title="누르는 동안 한국 훈/음"
+            >
               한
             </button>
-            <button type="button" data-hold-mode="jp" title="누르는 동안 일본어 뜻/음">
+            <button
+              type="button"
+              data-hold-mode="jp"
+              title="누르는 동안 일본어 뜻/음"
+            >
               일
             </button>
-            <button type="button" data-hold-mode="c" title="누르는 동안 일본어 예시">
+            <button
+              type="button"
+              data-hold-mode="c"
+              title="누르는 동안 일본어 예시"
+            >
               예
             </button>
           </div>
