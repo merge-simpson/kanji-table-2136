@@ -1721,8 +1721,6 @@ function bindHoldMode(button, holdModeName) {
       deactivate();
     }
   });
-
-  button.addEventListener('blur', deactivate);
 }
 
 toggleModeButtons.forEach((button) => {
