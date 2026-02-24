@@ -4,6 +4,7 @@ const PAGE_SIZE = DESKTOP_ROWS * DESKTOP_COLUMNS;
 const TARGET_KANJI_COUNT = 2136;
 const JOYO_KANJI_SORTED_JSON_PATH = './joyo-kanji.sorted.json';
 const MEMORIZED_KANJI_STORAGE_KEY = 'memorized-kanji-list-v1';
+const LAST_VIEWED_PAGE_STORAGE_KEY = 'kanji-table-last-viewed-page-v1';
 
 const JP_WORD_EXAMPLES = {
   一: ['一つ', '一日'],
@@ -1090,6 +1091,29 @@ function saveMemorizedKanji() {
   }
 }
 
+function loadLastViewedPage() {
+  try {
+    const raw = localStorage.getItem(LAST_VIEWED_PAGE_STORAGE_KEY);
+    const parsed = Number.parseInt(raw ?? '', 10);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      return 1;
+    }
+
+    return parsed;
+  } catch (error) {
+    console.warn('Could not load last viewed page from localStorage.', error);
+    return 1;
+  }
+}
+
+function saveLastViewedPage(page) {
+  try {
+    localStorage.setItem(LAST_VIEWED_PAGE_STORAGE_KEY, String(page));
+  } catch (error) {
+    console.warn('Could not save last viewed page to localStorage.', error);
+  }
+}
+
 function setCellMemorizedState(cell, isMemorized) {
   cell.classList.toggle('is-memorized', isMemorized);
   cell.classList.toggle('is-unmemorized', !isMemorized);
@@ -1492,6 +1516,7 @@ function applyMode(nextMode) {
 function renderPage(page) {
   const safePage = Math.min(totalPages, Math.max(1, page));
   currentPage = safePage;
+  saveLastViewedPage(currentPage);
   clearTempSelection();
 
   const data = getPageData(safePage);
@@ -1750,6 +1775,6 @@ if (selectionShapeToggleBtn) {
 }
 
 initializeKanjiList().then(() => {
-  renderPage(1);
+  renderPage(loadLastViewedPage());
   applyMode(pinnedMode);
 });
