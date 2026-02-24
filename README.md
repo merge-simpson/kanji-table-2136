@@ -27,6 +27,12 @@
     - `한`: 한국어 훈/음 표시
     - `일`: 일본어 뜻/음(훈독/음독) 표시
     - `예`: 일본어 단어 예시 1~2개 표시
+- 암기 표시 (셀 배경색)
+  - 암기 상태 보존(`localStorage`)
+  - 단일셀 토글: 셀 클릭
+  - 다중 선택
+    - `PATH`: 드래그 커서 경로
+    - `RECT`: 사각 영역 선택
 
 <a id="english"></a>
 <br />
@@ -57,6 +63,12 @@ A vanilla JavaScript project for browsing Joyo Kanji in a table layout.
     - `한(ko)`: Korean meaning/reading
     - `일(ja)`: Japanese meaning/readings (kun/on)
     - `예(ex)`: 1-2 Japanese word examples
+- Memorization state (cell background color)
+  - Memorization state persistence (`localStorage`)
+  - Single-cell toggle: click a cell
+  - Multi-selection
+    - `PATH`: drag cursor path
+    - `RECT`: rectangular area selection
 
 <a id="japanese"></a>
 <br />
@@ -87,3 +99,9 @@ A vanilla JavaScript project for browsing Joyo Kanji in a table layout.
     - `한(韓)`: 韓国語の訓/音を表示
     - `일(日)`: 日本語の意味/読み(訓読/音読)を表示
     - `예(例)`: 日本語の単語例を1-2個表示
+- 暗記状態の表示（セル背景色）
+  - 暗記状態を保持（`localStorage`）
+  - 単一セルの切り替え: セルをクリック
+  - 複数選択
+    - `PATH`: ドラッグカーソルの経路
+    - `RECT`: 矩形領域選択
